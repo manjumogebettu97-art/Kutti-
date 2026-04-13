@@ -1,212 +1,288 @@
-// ===== PRELOADER =====
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('preloader').classList.add('hidden');
-  }, 1500);
-});
+// =============================================
+// K.U.T.T.I. FAREWELL PARTY - ANIMATED INVITATION
+// =============================================
 
-// ===== PARTICLE BACKGROUND =====
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-let particles = [];
-let animationId;
+(function () {
+  'use strict';
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
+  // ===== SPARKLES ON ENVELOPE SCREEN =====
+  const sparklesCanvas = document.getElementById('sparkles');
+  const sCtx = sparklesCanvas.getContext('2d');
+  let sparkles = [];
 
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-class Particle {
-  constructor() {
-    this.reset();
+  function resizeSparkles() {
+    sparklesCanvas.width = window.innerWidth;
+    sparklesCanvas.height = window.innerHeight;
   }
+  resizeSparkles();
+  window.addEventListener('resize', resizeSparkles);
 
-  reset() {
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
-    this.size = Math.random() * 2.5 + 0.5;
-    this.speedX = (Math.random() - 0.5) * 0.4;
-    this.speedY = (Math.random() - 0.5) * 0.4;
-    this.opacity = Math.random() * 0.4 + 0.1;
-    this.color = ['#d4a853', '#a87fd4', '#e94560', '#ffffff'][Math.floor(Math.random() * 4)];
-    this.pulse = Math.random() * Math.PI * 2;
-    this.pulseSpeed = Math.random() * 0.02 + 0.005;
-  }
-
-  update() {
-    this.x += this.speedX;
-    this.y += this.speedY;
-    this.pulse += this.pulseSpeed;
-
-    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+  class Sparkle {
+    constructor() {
       this.reset();
     }
-  }
+    reset() {
+      this.x = Math.random() * sparklesCanvas.width;
+      this.y = Math.random() * sparklesCanvas.height;
+      this.size = Math.random() * 2 + 0.5;
+      this.speedY = -(Math.random() * 0.3 + 0.1);
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.opacity = Math.random() * 0.6 + 0.2;
+      this.twinkle = Math.random() * Math.PI * 2;
+      this.twinkleSpeed = Math.random() * 0.04 + 0.01;
+      this.color = ['#d4a853', '#f0d48a', '#e94560', '#a87fd4', '#fff'][Math.floor(Math.random() * 5)];
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.twinkle += this.twinkleSpeed;
+      if (this.y < -10 || this.x < -10 || this.x > sparklesCanvas.width + 10) this.reset();
+    }
+    draw() {
+      const alpha = this.opacity * (0.4 + Math.sin(this.twinkle) * 0.6);
+      sCtx.save();
+      sCtx.globalAlpha = alpha;
+      sCtx.fillStyle = this.color;
 
-  draw() {
-    const currentOpacity = this.opacity * (0.5 + Math.sin(this.pulse) * 0.5);
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
-    ctx.globalAlpha = currentOpacity;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-}
-
-// Create particles
-const particleCount = window.innerWidth < 768 ? 40 : 80;
-for (let i = 0; i < particleCount; i++) {
-  particles.push(new Particle());
-}
-
-function animateParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => {
-    p.update();
-    p.draw();
-  });
-
-  // Draw connections
-  for (let i = 0; i < particles.length; i++) {
-    for (let j = i + 1; j < particles.length; j++) {
-      const dx = particles[i].x - particles[j].x;
-      const dy = particles[i].y - particles[j].y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 120) {
-        ctx.beginPath();
-        ctx.moveTo(particles[i].x, particles[i].y);
-        ctx.lineTo(particles[j].x, particles[j].y);
-        ctx.strokeStyle = '#d4a853';
-        ctx.globalAlpha = 0.03 * (1 - dist / 120);
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+      // Draw star shape
+      sCtx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * Math.PI) / 2;
+        const outerX = this.x + Math.cos(angle) * this.size * 2;
+        const outerY = this.y + Math.sin(angle) * this.size * 2;
+        const innerAngle = angle + Math.PI / 4;
+        const innerX = this.x + Math.cos(innerAngle) * this.size * 0.5;
+        const innerY = this.y + Math.sin(innerAngle) * this.size * 0.5;
+        if (i === 0) sCtx.moveTo(outerX, outerY);
+        else sCtx.lineTo(outerX, outerY);
+        sCtx.lineTo(innerX, innerY);
       }
+      sCtx.closePath();
+      sCtx.fill();
+      sCtx.restore();
     }
   }
 
-  animationId = requestAnimationFrame(animateParticles);
-}
+  const sparkleCount = window.innerWidth < 768 ? 50 : 100;
+  for (let i = 0; i < sparkleCount; i++) sparkles.push(new Sparkle());
 
-animateParticles();
+  function animateSparkles() {
+    if (document.getElementById('envelopeScreen').classList.contains('hide')) return;
+    sCtx.clearRect(0, 0, sparklesCanvas.width, sparklesCanvas.height);
+    sparkles.forEach(s => { s.update(); s.draw(); });
+    requestAnimationFrame(animateSparkles);
+  }
+  animateSparkles();
 
-// ===== ENVELOPE INTERACTION =====
-const envelope = document.getElementById('envelope');
-const envelopeSection = document.getElementById('envelopeSection');
-const invitationContent = document.getElementById('invitationContent');
-const tapText = document.getElementById('tapText');
-let envelopeOpened = false;
+  // ===== ENVELOPE INTERACTION =====
+  const envelope = document.getElementById('envelope');
+  const envelopeScreen = document.getElementById('envelopeScreen');
+  const mainScreen = document.getElementById('mainScreen');
+  const tapHint = document.getElementById('tapHint');
+  let opened = false;
 
-envelope.addEventListener('click', openEnvelope);
-envelope.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  openEnvelope();
-}, { passive: false });
+  function openEnvelope() {
+    if (opened) return;
+    opened = true;
 
-function openEnvelope() {
-  if (envelopeOpened) return;
-  envelopeOpened = true;
+    envelope.style.animation = 'none';
+    envelope.classList.add('opened');
+    tapHint.style.opacity = '0';
+    tapHint.style.transition = 'opacity 0.3s';
 
-  envelope.classList.add('opened');
-  tapText.style.opacity = '0';
+    // Launch confetti
+    setTimeout(launchConfetti, 600);
 
-  setTimeout(() => {
-    envelopeSection.classList.add('hidden');
-    invitationContent.classList.add('visible');
-    triggerConfetti();
-
-    // Start observing scroll animations
-    setTimeout(initScrollAnimations, 100);
-  }, 1200);
-}
-
-// ===== CONFETTI BURST =====
-function triggerConfetti() {
-  const colors = ['#d4a853', '#e94560', '#764ba2', '#a87fd4', '#4ecdc4', '#ff6b6b', '#feca57', '#45b7d1'];
-
-  for (let i = 0; i < 60; i++) {
+    // Transition to main
     setTimeout(() => {
-      const confetti = document.createElement('div');
-      confetti.className = 'confetti-piece';
-      confetti.style.left = Math.random() * 100 + 'vw';
-      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.width = (Math.random() * 10 + 5) + 'px';
-      confetti.style.height = (Math.random() * 10 + 5) + 'px';
-      confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-      confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-
-      document.body.appendChild(confetti);
-
-      setTimeout(() => confetti.remove(), 4000);
-    }, i * 30);
-  }
-}
-
-// ===== COUNTDOWN TIMER =====
-const eventDate = new Date('April 18, 2026 10:00:00').getTime();
-
-function updateCountdown() {
-  const now = new Date().getTime();
-  const diff = eventDate - now;
-
-  if (diff <= 0) {
-    document.getElementById('days').textContent = '00';
-    document.getElementById('hours').textContent = '00';
-    document.getElementById('minutes').textContent = '00';
-    document.getElementById('seconds').textContent = '00';
-    return;
+      mainScreen.classList.add('show');
+      envelopeScreen.classList.add('hide');
+      initParticles();
+      animateHeroItems();
+      initScrollObserver();
+      startCountdown();
+    }, 1400);
   }
 
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  envelope.addEventListener('click', openEnvelope);
 
-  document.getElementById('days').textContent = String(days).padStart(2, '0');
-  document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-  document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-  document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-}
+  // Also allow tap anywhere on envelope screen
+  envelopeScreen.addEventListener('click', (e) => {
+    if (e.target === envelopeScreen || e.target.closest('.envelope-center')) {
+      openEnvelope();
+    }
+  });
 
-updateCountdown();
-setInterval(updateCountdown, 1000);
+  // ===== CONFETTI =====
+  function launchConfetti() {
+    const colors = ['#d4a853', '#e94560', '#764ba2', '#a87fd4', '#4ecdc4', '#ff6b6b', '#feca57', '#45b7d1', '#f0d48a'];
+    const container = document.getElementById('confettiContainer');
 
-// ===== SCROLL ANIMATIONS =====
-function initScrollAnimations() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
+    for (let i = 0; i < 80; i++) {
+      setTimeout(() => {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+        const size = Math.random() * 12 + 5;
+        piece.style.width = size + 'px';
+        piece.style.height = size * (Math.random() * 0.6 + 0.4) + 'px';
+
+        const shapes = ['50%', '2px', '0'];
+        piece.style.borderRadius = shapes[Math.floor(Math.random() * shapes.length)];
+        piece.style.animationDuration = (Math.random() * 2.5 + 2) + 's';
+
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+      }, i * 25);
+    }
+  }
+
+  // ===== PARTICLES (main screen) =====
+  const pCanvas = document.getElementById('particles');
+  const pCtx = pCanvas.getContext('2d');
+  let dots = [];
+
+  function resizeParticles() {
+    pCanvas.width = window.innerWidth;
+    pCanvas.height = window.innerHeight;
+  }
+
+  class Dot {
+    constructor() {
+      this.x = Math.random() * pCanvas.width;
+      this.y = Math.random() * pCanvas.height;
+      this.vx = (Math.random() - 0.5) * 0.3;
+      this.vy = (Math.random() - 0.5) * 0.3;
+      this.r = Math.random() * 1.5 + 0.5;
+      this.alpha = Math.random() * 0.3 + 0.1;
+      this.color = ['#d4a853', '#a87fd4', '#e94560'][Math.floor(Math.random() * 3)];
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0) this.x = pCanvas.width;
+      if (this.x > pCanvas.width) this.x = 0;
+      if (this.y < 0) this.y = pCanvas.height;
+      if (this.y > pCanvas.height) this.y = 0;
+    }
+    draw() {
+      pCtx.beginPath();
+      pCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      pCtx.fillStyle = this.color;
+      pCtx.globalAlpha = this.alpha;
+      pCtx.fill();
+      pCtx.globalAlpha = 1;
+    }
+  }
+
+  function initParticles() {
+    resizeParticles();
+    window.addEventListener('resize', resizeParticles);
+    const count = window.innerWidth < 768 ? 35 : 70;
+    for (let i = 0; i < count; i++) dots.push(new Dot());
+    animateDots();
+  }
+
+  function animateDots() {
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+    dots.forEach(d => { d.update(); d.draw(); });
+
+    // Lines
+    for (let i = 0; i < dots.length; i++) {
+      for (let j = i + 1; j < dots.length; j++) {
+        const dx = dots[i].x - dots[j].x;
+        const dy = dots[i].y - dots[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 100) {
+          pCtx.beginPath();
+          pCtx.moveTo(dots[i].x, dots[i].y);
+          pCtx.lineTo(dots[j].x, dots[j].y);
+          pCtx.strokeStyle = '#d4a853';
+          pCtx.globalAlpha = 0.025 * (1 - dist / 100);
+          pCtx.lineWidth = 0.5;
+          pCtx.stroke();
+          pCtx.globalAlpha = 1;
+        }
       }
-    });
-  }, {
-    threshold: 0.15,
-    rootMargin: '0px 0px -50px 0px'
-  });
-
-  document.querySelectorAll('.animate-on-scroll').forEach(el => {
-    observer.observe(el);
-  });
-}
-
-// ===== SMOOTH SCROLL PERFORMANCE =====
-let ticking = false;
-window.addEventListener('scroll', () => {
-  if (!ticking) {
-    requestAnimationFrame(() => {
-      // Parallax for hero shapes
-      const scrollY = window.scrollY;
-      const shapes = document.querySelectorAll('.hero-bg-shapes .shape');
-      shapes.forEach((shape, i) => {
-        const speed = 0.03 * (i + 1);
-        shape.style.transform = `translateY(${scrollY * speed}px)`;
-      });
-      ticking = false;
-    });
-    ticking = true;
+    }
+    requestAnimationFrame(animateDots);
   }
-});
+
+  // ===== HERO ITEM ANIMATIONS =====
+  function animateHeroItems() {
+    const items = document.querySelectorAll('.anim-item');
+    items.forEach(item => {
+      const delay = parseInt(item.getAttribute('data-delay') || 0);
+      setTimeout(() => item.classList.add('animate'), delay);
+    });
+  }
+
+  // ===== SCROLL REVEAL =====
+  function initScrollObserver() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = parseInt(entry.target.getAttribute('data-delay') || 0);
+          setTimeout(() => entry.target.classList.add('visible'), delay);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+  }
+
+  // ===== COUNTDOWN =====
+  function startCountdown() {
+    const target = new Date('April 18, 2026 10:00:00').getTime();
+
+    function tick() {
+      const now = Date.now();
+      const diff = Math.max(0, target - now);
+
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+
+      animateNumber('days', d);
+      animateNumber('hours', h);
+      animateNumber('minutes', m);
+      animateNumber('seconds', s);
+    }
+
+    function animateNumber(id, value) {
+      const el = document.getElementById(id);
+      const str = String(value).padStart(2, '0');
+      if (el.textContent !== str) {
+        el.style.transform = 'translateY(-8px)';
+        el.style.opacity = '0.3';
+        setTimeout(() => {
+          el.textContent = str;
+          el.style.transform = 'translateY(0)';
+          el.style.opacity = '1';
+        }, 150);
+      }
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  // ===== PARALLAX ON SCROLL =====
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        document.querySelectorAll('.fshape').forEach((s, i) => {
+          s.style.transform = `translateY(${y * 0.02 * (i + 1)}px)`;
+        });
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+})();
