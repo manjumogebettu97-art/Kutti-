@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K.U.T.T.I. Farewell Party 2026</title>
+  <meta name="description" content="You are invited to K.U.T.T.I.'s Farewell Party - April 18, 2026">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Great+Vibes&family=Poppins:wght@200;300;400;500;600;700&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Preloader -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-inner">
+      <div class="preloader-ring"></div>
+      <div class="preloader-ring"></div>
+      <div class="preloader-ring"></div>
+      <p class="preloader-text">Opening Your Invitation...</p>
+    </div>
+  </div>
+
+  <!-- Floating particles canvas -->
+  <canvas id="particles"></canvas>
+
+  <!-- Envelope Animation -->
+  <section class="envelope-section" id="envelopeSection">
+    <div class="envelope-wrapper">
+      <div class="envelope" id="envelope">
+        <div class="envelope-flap"></div>
+        <div class="envelope-body">
+          <div class="letter" id="letter">
+            <div class="letter-stamp">K.U.T.T.I.</div>
+          </div>
+        </div>
+      </div>
+      <p class="tap-text" id="tapText">Tap to Open</p>
+    </div>
+  </section>
+
+  <!-- Main Invitation Content -->
+  <main class="invitation-content" id="invitationContent">
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+      </div>
+
+      <div class="hero-content">
+        <div class="reveal-up">
+          <p class="hero-subtitle">You Are Cordially Invited To</p>
+        </div>
+        <div class="reveal-up delay-1">
+          <h1 class="hero-title">K.U.T.T.I.</h1>
+        </div>
+        <div class="reveal-up delay-2">
+          <p class="hero-institute">Kumuda Umashankara Teachers Training Institute</p>
+          <p class="hero-location">Kokkarne</p>
+        </div>
+        <div class="reveal-up delay-3">
+          <div class="hero-divider">
+            <span class="divider-line"></span>
+            <span class="divider-star">&#10022;</span>
+            <span class="divider-line"></span>
+          </div>
+        </div>
+        <div class="reveal-up delay-4">
+          <h2 class="hero-event">Farewell Party</h2>
+        </div>
+        <div class="reveal-up delay-5">
+          <p class="hero-tagline">A celebration of memories, friendships & new beginnings</p>
+        </div>
+      </div>
+
+      <div class="scroll-indicator">
+        <div class="scroll-arrow"></div>
+        <p>Scroll Down</p>
+      </div>
+    </section>
+
+    <!-- Countdown Section -->
+    <section class="countdown-section" id="countdown">
+      <div class="section-container">
+        <h3 class="section-label animate-on-scroll">Save The Date</h3>
+        <div class="countdown-grid animate-on-scroll">
+          <div class="countdown-item">
+            <div class="countdown-number" id="days">00</div>
+            <div class="countdown-label">Days</div>
+          </div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item">
+            <div class="countdown-number" id="hours">00</div>
+            <div class="countdown-label">Hours</div>
+          </div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item">
+            <div class="countdown-number" id="minutes">00</div>
+            <div class="countdown-label">Minutes</div>
+          </div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item">
+            <div class="countdown-number" id="seconds">00</div>
+            <div class="countdown-label">Seconds</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Event Details Section -->
+    <section class="details-section">
+      <div class="section-container">
+        <h3 class="section-label animate-on-scroll">Event Details</h3>
+
+        <div class="details-grid">
+          <div class="detail-card animate-on-scroll">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <h4 class="card-title">Date</h4>
+            <p class="card-value">April 18, 2026</p>
+            <p class="card-sub">Saturday</p>
+          </div>
+
+          <div class="detail-card animate-on-scroll" style="animation-delay: 0.15s">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <h4 class="card-title">Time</h4>
+            <p class="card-value">10:00 AM</p>
+            <p class="card-sub">Onwards</p>
+          </div>
+
+          <div class="detail-card animate-on-scroll" style="animation-delay: 0.3s">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <h4 class="card-title">Venue</h4>
+            <p class="card-value">K.U.T.T.I.</p>
+            <p class="card-sub">Kumuda Umashankara Teachers<br>Training Institute, Kokkarne</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quote Section -->
+    <section class="quote-section">
+      <div class="section-container">
+        <div class="quote-card animate-on-scroll">
+          <div class="quote-mark">&ldquo;</div>
+          <p class="quote-text">Don't cry because it's over,<br>smile because it happened.</p>
+          <p class="quote-author">- Dr. Seuss</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Programme Highlights -->
+    <section class="programme-section">
+      <div class="section-container">
+        <h3 class="section-label animate-on-scroll">What Awaits You</h3>
+        <div class="programme-grid">
+          <div class="programme-item animate-on-scroll">
+            <div class="programme-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <span>Cultural Performances</span>
+          </div>
+          <div class="programme-item animate-on-scroll" style="animation-delay:0.1s">
+            <div class="programme-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <span>Heartfelt Tributes</span>
+          </div>
+          <div class="programme-item animate-on-scroll" style="animation-delay:0.2s">
+            <div class="programme-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <span>Fun Games & Awards</span>
+          </div>
+          <div class="programme-item animate-on-scroll" style="animation-delay:0.3s">
+            <div class="programme-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <span>Surprise Moments</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hosted By Section -->
+    <section class="hosted-section">
+      <div class="section-container">
+        <div class="hosted-card animate-on-scroll">
+          <p class="hosted-label">With Love From</p>
+          <h3 class="hosted-name">First Year D.El.Ed Students</h3>
+          <p class="hosted-institute">K.U.T.T.I., Kokkarne</p>
+          <div class="hosted-hearts">
+            <span class="heart h1">&#10084;</span>
+            <span class="heart h2">&#10084;</span>
+            <span class="heart h3">&#10084;</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="confetti-burst" id="confettiBurst"></div>
+      <p class="footer-text">We look forward to seeing you!</p>
+      <p class="footer-date">April 18, 2026 &bull; 10:00 AM &bull; K.U.T.T.I., Kokkarne</p>
+    </footer>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
