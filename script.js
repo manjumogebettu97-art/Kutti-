@@ -85,6 +85,10 @@
     if (opened) return;
     opened = true;
 
+    // IMPORTANT: Create & unlock audio IMMEDIATELY inside user gesture
+    // Safari & Android Chrome require this - cannot be in setTimeout
+    unlockAndStartAudio();
+
     envelope.style.animation = 'none';
     envelope.classList.add('opened');
     tapHint.style.opacity = '0';
@@ -93,11 +97,8 @@
     // Launch confetti
     setTimeout(launchConfetti, 600);
 
-    // Start music after user tap (this enables AudioContext)
-    setTimeout(startMusic, 800);
-
     // Transition to main
-    setTimeout(() => {
+    setTimeout(function () {
       mainScreen.classList.add('show');
       envelopeScreen.classList.add('hide');
       initParticles();
@@ -109,9 +110,13 @@
   }
 
   envelope.addEventListener('click', openEnvelope);
+  envelope.addEventListener('touchend', function (e) {
+    e.preventDefault();
+    openEnvelope();
+  }, { passive: false });
 
   // Also allow tap anywhere on envelope screen
-  envelopeScreen.addEventListener('click', (e) => {
+  envelopeScreen.addEventListener('click', function (e) {
     if (e.target === envelopeScreen || e.target.closest('.envelope-center')) {
       openEnvelope();
     }
@@ -290,129 +295,146 @@
   });
 
   // ============================================
-  // ===== BACKGROUND MUSIC (Web Audio API) =====
+  // ===== BACKGROUND MUSIC (Safari + Android fix) =====
   // ============================================
-  let audioCtx = null;
-  let musicPlaying = false;
-  let loopTimer = null;
-  let masterGain = null;
-  let reverbGain = null;
+  var audioCtx = null;
+  var masterGain = null;
+  var musicPlaying = false;
+  var loopTimer = null;
+  var audioUnlocked = false;
 
-  // Note frequencies
-  const N = {
-    C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196.00, A3:220.00, B3:246.94,
-    C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.00, A4:440.00, B4:493.88,
-    C5:523.25, D5:587.33, E5:659.25
-  };
-
-  // Chord progression: C - Am - F - G (emotional, farewell feel)
-  const progression = [
-    { chord: [N.C3, N.C4, N.E4, N.G4],      melody: [N.E5, N.D5, N.C5, N.E5] },
-    { chord: [N.A3, N.C4, N.E4, N.A4],       melody: [N.C5, N.B4, N.A4, N.C5] },
-    { chord: [N.F3, N.F4, N.A4, N.C5],       melody: [N.A4, N.C5, N.D5, N.C5] },
-    { chord: [N.G3, N.G4, N.B4, N.D5],       melody: [N.B4, N.D5, N.C5, N.B4] },
-    { chord: [N.C3, N.C4, N.E4, N.G4],       melody: [N.C5, N.E5, N.D5, N.C5] },
-    { chord: [N.E3, N.E4, N.G4, N.B4],       melody: [N.E5, N.D5, N.B4, N.E5] },
-    { chord: [N.F3, N.F4, N.A4, N.C5],       melody: [N.C5, N.A4, N.C5, N.D5] },
-    { chord: [N.G3, N.G4, N.B4, N.D5],       melody: [N.D5, N.B4, N.G4, N.A4] },
-  ];
-
-  function playTone(freq, startTime, duration, volume, type) {
-    if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-
-    osc.type = type || 'sine';
-    osc.frequency.setValueAtTime(freq, startTime);
-
-    // Add slight vibrato for warmth
-    const vibrato = audioCtx.createOscillator();
-    const vibratoGain = audioCtx.createGain();
-    vibrato.frequency.value = 5;
-    vibratoGain.gain.value = 1.5;
-    vibrato.connect(vibratoGain);
-    vibratoGain.connect(osc.frequency);
-    vibrato.start(startTime);
-    vibrato.stop(startTime + duration + 0.2);
-
-    osc.connect(gain);
-    gain.connect(masterGain);
-
-    // Piano-like ADSR envelope
-    gain.gain.setValueAtTime(0, startTime);
-    gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
-    gain.gain.exponentialRampToValueAtTime(volume * 0.5, startTime + 0.08);
-    gain.gain.exponentialRampToValueAtTime(volume * 0.25, startTime + duration * 0.5);
-    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-
-    osc.start(startTime);
-    osc.stop(startTime + duration + 0.05);
-
-    // Add 2nd harmonic for richness
-    const osc2 = audioCtx.createOscillator();
-    const gain2 = audioCtx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(freq * 2, startTime);
-    osc2.connect(gain2);
-    gain2.connect(masterGain);
-    gain2.gain.setValueAtTime(0, startTime);
-    gain2.gain.linearRampToValueAtTime(volume * 0.15, startTime + 0.01);
-    gain2.gain.exponentialRampToValueAtTime(0.001, startTime + duration * 0.7);
-    osc2.start(startTime);
-    osc2.stop(startTime + duration + 0.05);
-  }
-
-  function playSection() {
-    if (!musicPlaying || !audioCtx) return;
-
-    const now = audioCtx.currentTime + 0.05;
-    const beatLen = 2.8; // seconds per chord
-
-    progression.forEach((bar, i) => {
-      const barStart = now + i * beatLen;
-
-      // Arpeggiated chord (notes staggered)
-      bar.chord.forEach((freq, j) => {
-        playTone(freq, barStart + j * 0.1, beatLen * 0.85, 0.08, 'sine');
-      });
-
-      // Melody notes
-      bar.melody.forEach((freq, j) => {
-        const noteStart = barStart + j * (beatLen / 4) + 0.05;
-        playTone(freq, noteStart, beatLen / 4.5, 0.06, 'triangle');
-      });
-
-      // Soft bass
-      playTone(bar.chord[0] * 0.5, barStart, beatLen * 0.9, 0.04, 'sine');
-    });
-
-    const totalLen = progression.length * beatLen;
-    loopTimer = setTimeout(playSection, (totalLen - 0.3) * 1000);
-  }
-
-  function startMusic() {
+  // Step 1: Create AudioContext + play silent buffer to unlock
+  // MUST happen inside direct user gesture (click/touchend)
+  function unlockAndStartAudio() {
     try {
+      // Create context inside user gesture
+      var AC = window.AudioContext || window.webkitAudioContext;
       if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioCtx = new AC();
       }
 
-      // Resume context (required after user gesture)
+      // Resume if suspended (required for Chrome/Safari)
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
 
+      // Play a tiny silent buffer to fully unlock audio on iOS/Safari
+      var silentBuffer = audioCtx.createBuffer(1, 1, 22050);
+      var silentSource = audioCtx.createBufferSource();
+      silentSource.buffer = silentBuffer;
+      silentSource.connect(audioCtx.destination);
+      silentSource.start(0);
+
+      // Create master gain
       if (!masterGain) {
         masterGain = audioCtx.createGain();
         masterGain.gain.value = 0.5;
         masterGain.connect(audioCtx.destination);
       }
 
-      musicPlaying = true;
-      document.getElementById('musicBtn').classList.add('playing');
-      playSection();
+      audioUnlocked = true;
+
+      // Start music after a short delay (let envelope animation play first)
+      setTimeout(function () {
+        beginMusic();
+      }, 900);
+
     } catch (err) {
-      console.log('Music error:', err);
+      console.log('Audio unlock failed:', err);
     }
+  }
+
+  // Note frequencies
+  var C3=130.81, E3=164.81, F3=174.61, G3=196.00, A3=220.00;
+  var C4=261.63, D4=293.66, E4=329.63, G4=392.00, A4=440.00, B4=493.88;
+  var C5=523.25, D5=587.33, E5=659.25;
+
+  // Chord progression
+  var progression = [
+    { ch: [C3, C4, E4, G4],   mel: [E5, D5, C5, E5] },
+    { ch: [A3, C4, E4, A4],   mel: [C5, B4, A4, C5] },
+    { ch: [F3, F3*2, A4, C5], mel: [A4, C5, D5, C5] },
+    { ch: [G3, G4, B4, D5],   mel: [B4, D5, C5, B4] },
+    { ch: [C3, C4, E4, G4],   mel: [C5, E5, D5, C5] },
+    { ch: [E3, E4, G4, B4],   mel: [E5, D5, B4, E5] },
+    { ch: [F3, F3*2, A4, C5], mel: [C5, A4, C5, D5] },
+    { ch: [G3, G4, B4, D5],   mel: [D5, B4, G4, A4] }
+  ];
+
+  function tone(freq, when, dur, vol, wave) {
+    if (!audioCtx || !masterGain) return;
+
+    var osc = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    osc.type = wave || 'sine';
+    osc.frequency.value = freq;
+    osc.connect(g);
+    g.connect(masterGain);
+
+    // Soft attack, long release
+    g.gain.setValueAtTime(0.001, when);
+    g.gain.linearRampToValueAtTime(vol, when + 0.02);
+    g.gain.setValueAtTime(vol, when + 0.02);
+    g.gain.exponentialRampToValueAtTime(vol * 0.4, when + dur * 0.3);
+    g.gain.exponentialRampToValueAtTime(0.001, when + dur);
+
+    osc.start(when);
+    osc.stop(when + dur + 0.05);
+
+    // 2nd harmonic for warmth
+    var osc2 = audioCtx.createOscillator();
+    var g2 = audioCtx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = freq * 2;
+    osc2.connect(g2);
+    g2.connect(masterGain);
+    g2.gain.setValueAtTime(0.001, when);
+    g2.gain.linearRampToValueAtTime(vol * 0.12, when + 0.02);
+    g2.gain.exponentialRampToValueAtTime(0.001, when + dur * 0.6);
+    osc2.start(when);
+    osc2.stop(when + dur + 0.05);
+  }
+
+  function scheduleLoop() {
+    if (!musicPlaying || !audioCtx) return;
+
+    var now = audioCtx.currentTime + 0.1;
+    var beat = 2.8;
+
+    for (var i = 0; i < progression.length; i++) {
+      var bar = progression[i];
+      var t = now + i * beat;
+
+      // Arpeggiated chord
+      for (var j = 0; j < bar.ch.length; j++) {
+        tone(bar.ch[j], t + j * 0.12, beat * 0.8, 0.07, 'sine');
+      }
+
+      // Melody
+      for (var m = 0; m < bar.mel.length; m++) {
+        tone(bar.mel[m], t + m * (beat / 4) + 0.05, beat / 4, 0.055, 'triangle');
+      }
+
+      // Bass
+      tone(bar.ch[0] * 0.5, t, beat * 0.85, 0.035, 'sine');
+    }
+
+    var total = progression.length * beat;
+    loopTimer = setTimeout(scheduleLoop, (total - 0.5) * 1000);
+  }
+
+  function beginMusic() {
+    if (!audioUnlocked || !audioCtx) return;
+
+    // Make sure context is running
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    musicPlaying = true;
+    masterGain.gain.value = 0.5;
+    document.getElementById('musicBtn').classList.add('playing');
+    scheduleLoop();
   }
 
   function stopMusic() {
@@ -422,12 +444,12 @@
       clearTimeout(loopTimer);
       loopTimer = null;
     }
-    // Fade out
     if (masterGain && audioCtx) {
-      masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
-      setTimeout(() => {
-        if (masterGain) masterGain.gain.value = 0.5;
-      }, 500);
+      try {
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(masterGain.gain.value, audioCtx.currentTime);
+        masterGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      } catch (e) {}
     }
   }
 
@@ -436,7 +458,11 @@
     if (musicPlaying) {
       stopMusic();
     } else {
-      startMusic();
+      if (!audioUnlocked) {
+        unlockAndStartAudio();
+      } else {
+        beginMusic();
+      }
     }
   });
 
