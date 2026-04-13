@@ -105,7 +105,6 @@
       animateHeroItems();
       initScrollObserver();
       startCountdown();
-      document.getElementById('musicBtn').classList.add('show');
     }, 1400);
   }
 
@@ -436,34 +435,5 @@
     document.getElementById('musicBtn').classList.add('playing');
     scheduleLoop();
   }
-
-  function stopMusic() {
-    musicPlaying = false;
-    document.getElementById('musicBtn').classList.remove('playing');
-    if (loopTimer) {
-      clearTimeout(loopTimer);
-      loopTimer = null;
-    }
-    if (masterGain && audioCtx) {
-      try {
-        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-        masterGain.gain.setValueAtTime(masterGain.gain.value, audioCtx.currentTime);
-        masterGain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-      } catch (e) {}
-    }
-  }
-
-  // Toggle button
-  document.getElementById('musicBtn').addEventListener('click', function () {
-    if (musicPlaying) {
-      stopMusic();
-    } else {
-      if (!audioUnlocked) {
-        unlockAndStartAudio();
-      } else {
-        beginMusic();
-      }
-    }
-  });
 
 })();
